@@ -4,9 +4,9 @@ on:
   # This section schedules the action to run four times a day based on UTC.
   # The BDT (UTC+6) equivalent times are listed in comments.
   schedule:
-    # 1. Immediate Test (9:50 PM BDT) 
-    # NOTE: You can delete this line after today's successful run if you don't need it daily.
-    - cron: '50 15 * * *'  # Runs at 15:50 UTC (9:50 PM BDT)
+    # 1. Immediate Test (10:10 PM BDT) 
+    # NOTE: You can delete this line after today's successful run.
+    - cron: '10 16 * * *'  # Runs at 16:10 UTC (10:10 PM BDT)
 
     # 2. Morning Commit (9:00 AM BDT)
     - cron: '0 3 * * *'    # Runs at 03:00 UTC (9:00 AM BDT)
@@ -35,7 +35,6 @@ jobs:
           git config --global user.email "ake.akibislam@gmail.com"
           
       # Step 3: Create a unique change based on the current run time
-      # This command appends a unique timestamp to commit_log.md every time it runs.
       - name: Create Daily Entry
         run: echo "Multi-commit update: $(date +%Y-%m-%d) at $(date -u +%H:%M) UTC" >> commit_log.md
 
@@ -43,8 +42,7 @@ jobs:
       - name: Commit and Push
         run: |
           git add commit_log.md
-          
-          # Use a dynamic commit message for clarity
+          # Use a dynamic commit message for clarity.
+          # The '|| true' allows the action to complete even if git commit finds no changes.
           git commit -m "Auto-commit: Multi-run update at $(date -u +%H:%M) UTC" || true
-          
           git push
