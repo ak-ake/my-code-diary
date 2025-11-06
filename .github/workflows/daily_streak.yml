@@ -1,0 +1,46 @@
+name: Auto Commit Daily Diary
+# This is the title you will see in the 'Actions' tab
+
+on:
+  # This section schedules the action to run daily at a specific time.
+  # '0 0 * * *' means: At 00:00 (midnight) Coordinated Universal Time (UTC).
+  # Adjust the time if you need it to run at a specific time in your timezone.
+  schedule:
+    - cron: '0 0 * * *'
+  # This allows you to manually run the workflow from the 'Actions' tab
+  workflow_dispatch:
+
+jobs:
+  commit:
+    # Runs on a fresh Ubuntu environment provided by GitHub
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # Step 2: Configure the Git user
+      - name: Git Config
+        run: |
+          # Use your GitHub username and email here
+          git config --global user.name "ak-ake"
+          git config --global user.email "YOUR-GITHUB-EMAIL@example.com"
+          
+      # Step 3: Create a trivial, new change to commit
+      # This command appends a timestamp to a file named 'commit_log.md'
+      - name: Create Daily Entry
+        run: echo "Daily streak update: $(date +%Y-%m-%d %H:%M:%S)" >> commit_log.md
+
+      # Step 4: Commit and Push the change
+      - name: Commit and Push
+        run: |
+          # Stage the changes
+          git add commit_log.md
+          
+          # Commit the changes - the '|| true' allows the action to succeed 
+          # even if there are no changes to commit for some reason.
+          git commit -m "Automated daily diary commit - $(date +%Y-%m-%d)" || true
+          
+          # Push the commit to the main branch
+          # GitHub Actions automatically uses a token with push permission.
+          git push
