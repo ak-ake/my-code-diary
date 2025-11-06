@@ -1,46 +1,50 @@
-name: Auto Commit Daily Diary
-# This is the title you will see in the 'Actions' tab
+name: Multiple Auto Commits Per Day
 
 on:
-  # This section schedules the action to run daily at a specific time.
-  # '0 0 * * *' means: At 00:00 (midnight) Coordinated Universal Time (UTC).
-  # Adjust the time if you need it to run at a specific time in your timezone.
+  # This section schedules the action to run four times a day based on UTC.
+  # The BDT (UTC+6) equivalent times are listed in comments.
   schedule:
-    - cron: '0 0 * * *'
-  # This allows you to manually run the workflow from the 'Actions' tab
+    # 1. Immediate Test (9:50 PM BDT) 
+    # NOTE: You can delete this line after today's successful run if you don't need it daily.
+    - cron: '50 15 * * *'  # Runs at 15:50 UTC (9:50 PM BDT)
+
+    # 2. Morning Commit (9:00 AM BDT)
+    - cron: '0 3 * * *'    # Runs at 03:00 UTC (9:00 AM BDT)
+    
+    # 3. Afternoon Commit (2:00 PM BDT)
+    - cron: '0 8 * * *'    # Runs at 08:00 UTC (2:00 PM BDT)
+    
+    # 4. Evening Commit (6:00 PM BDT)
+    - cron: '0 12 * * *'   # Runs at 12:00 UTC (6:00 PM BDT)
+    
+  # Allows you to manually run the workflow from the 'Actions' tab
   workflow_dispatch:
 
 jobs:
   commit:
-    # Runs on a fresh Ubuntu environment provided by GitHub
     runs-on: ubuntu-latest
     steps:
       # Step 1: Check out the repository code
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      # Step 2: Configure the Git user
+      # Step 2: Configure the Git user with your details
       - name: Git Config
         run: |
-          # Use your GitHub username and email here
           git config --global user.name "ak-ake"
-          git config --global user.email "YOUR-GITHUB-EMAIL@example.com"
+          git config --global user.email "ake.akibislam@gmail.com"
           
-      # Step 3: Create a trivial, new change to commit
-      # This command appends a timestamp to a file named 'commit_log.md'
+      # Step 3: Create a unique change based on the current run time
+      # This command appends a unique timestamp to commit_log.md every time it runs.
       - name: Create Daily Entry
-        run: echo "Daily streak update: $(date +%Y-%m-%d %H:%M:%S)" >> commit_log.md
+        run: echo "Multi-commit update: $(date +%Y-%m-%d) at $(date -u +%H:%M) UTC" >> commit_log.md
 
       # Step 4: Commit and Push the change
       - name: Commit and Push
         run: |
-          # Stage the changes
           git add commit_log.md
           
-          # Commit the changes - the '|| true' allows the action to succeed 
-          # even if there are no changes to commit for some reason.
-          git commit -m "Automated daily diary commit - $(date +%Y-%m-%d)" || true
+          # Use a dynamic commit message for clarity
+          git commit -m "Auto-commit: Multi-run update at $(date -u +%H:%M) UTC" || true
           
-          # Push the commit to the main branch
-          # GitHub Actions automatically uses a token with push permission.
           git push
