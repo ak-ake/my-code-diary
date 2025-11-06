@@ -1,48 +1,43 @@
 name: Multiple Auto Commits Per Day
 
 on:
-  # This section schedules the action to run four times a day based on UTC.
-  # The BDT (UTC+6) equivalent times are listed in comments.
   schedule:
-    # 1. Immediate Test (10:10 PM BDT) 
-    # NOTE: You can delete this line after today's successful run.
-    - cron: '10 16 * * *'  # Runs at 16:10 UTC (10:10 PM BDT)
-
-    # 2. Morning Commit (9:00 AM BDT)
-    - cron: '0 3 * * *'    # Runs at 03:00 UTC (9:00 AM BDT)
-    
-    # 3. Afternoon Commit (2:00 PM BDT)
-    - cron: '0 8 * * *'    # Runs at 08:00 UTC (2:00 PM BDT)
-    
-    # 4. Evening Commit (6:00 PM BDT)
-    - cron: '0 12 * * *'   # Runs at 12:00 UTC (6:00 PM BDT)
-    
-  # Allows you to manually run the workflow from the 'Actions' tab
+    - cron: '30 16 * * *'  # 10:30 PM BDT
+    - cron: '0 3 * * *'    # 9:00 AM BDT
+    - cron: '0 8 * * *'    # 2:00 PM BDT
+    - cron: '0 12 * * *'   # 6:00 PM BDT
   workflow_dispatch:
 
 jobs:
   commit:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      # Step 1: Check out the repository code
       - name: Checkout repository
         uses: actions/checkout@v4
-      
-      # Step 2: Configure the Git user with your details
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+
       - name: Git Config
         run: |
           git config --global user.name "ak-ake"
           git config --global user.email "ake.akibislam@gmail.com"
           
-      # Step 3: Create a unique change based on the current run time
       - name: Create Daily Entry
-        run: echo "Multi-commit update: $(date +%Y-%m-%d) at $(date -u +%H:%M) UTC" >> commit_log.md
+        run: |
+          if [ ! -f commit_log.md ]; then
+            touch commit_log.md
+          fi
+          echo "Multi-commit update: $(date +%Y-%m-%d) at $(date -u +%H:%M) UTC" >> commit_log.md
 
-      # Step 4: Commit and Push the change
       - name: Commit and Push
         run: |
           git add commit_log.md
-          # Use a dynamic commit message for clarity.
-          # The '|| true' allows the action to complete even if git commit finds no changes.
-          git commit -m "Auto-commit: Multi-run update at $(date -u +%H:%M) UTC" || true
-          git push
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Auto-commit: Multi-run update at $(date -u +%H:%M) UTC"
+          git push origin HEAD || echo "Push failed"
