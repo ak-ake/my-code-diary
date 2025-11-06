@@ -2,7 +2,11 @@ name: Multiple Auto Commits Per Day
 
 on:
   schedule:
-    - cron: '30 16 * * *'  # 10:30 PM BDT
+    - cron: '30 16 * * *'  # 10:30 PM BDT (16:30 UTC)
+    - cron: '40 16 * * *'  # 10:40 PM BDT (16:40 UTC)
+    - cron: '50 16 * * *'  # 10:50 PM BDT (16:50 UTC)
+    - cron: '0 17 * * *'   # 11:00 PM BDT (17:00 UTC)
+    - cron: '10 17 * * *'  # 11:10 PM BDT (17:10 UTC)
     - cron: '0 3 * * *'    # 9:00 AM BDT
     - cron: '0 8 * * *'    # 2:00 PM BDT
     - cron: '0 12 * * *'   # 6:00 PM BDT
